@@ -88,7 +88,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="MandelbrotGenerator.cpp" />
+    <ClCompile Include="MandelbrotScene.cpp" />
     <ClCompile Include="source.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="MandelbrotGenerator.h" />
+    <ClInclude Include="MandelbrotScene.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

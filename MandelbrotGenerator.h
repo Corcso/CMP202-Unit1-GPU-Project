@@ -1,0 +1,18 @@
+#pragma once
+#include <stdint.h>
+#include <CL/sycl.hpp>
+
+namespace MandelbrotGenerator
+{
+	struct ComplexD {
+		double x;
+		double y;
+	};
+
+	ComplexD c_add(ComplexD c1, ComplexD c2);
+	ComplexD c_mul(ComplexD c1, ComplexD c2);
+	double c_abs(ComplexD c);
+
+	void GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom);
+}
+
