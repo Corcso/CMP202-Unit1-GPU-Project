@@ -1,13 +1,23 @@
 #include <SFML/Graphics.hpp>
 
+#include "MandelbrotScene.h"
+
 int main()
 {
-    sf::RenderWindow window(sf::VideoMode(1000, 800), "SFML works!");
-    sf::CircleShape shape(100.f);
-    shape.setFillColor(sf::Color::Green);
+    // Scene object where all update and render code goes. 
+    MandelbrotScene mainScene;
 
+    // Create the window object in SFML
+    sf::RenderWindow window(sf::VideoMode(1000, 800), "CMP 202 GPU");
+
+    // Start the clock for getting deltatime
+    sf::Clock clock;
     while (window.isOpen())
     {
+        // Get the delta time
+        float deltaTime = clock.restart().asSeconds();
+
+        // Handle a window close
         sf::Event event;
         while (window.pollEvent(event))
         {
@@ -15,8 +25,11 @@ int main()
                 window.close();
         }
 
+        // Every frame run the scenes update and render functions. 
+        mainScene.onUpdate(deltaTime);
+        
         window.clear();
-        window.draw(shape);
+        mainScene.onRender(deltaTime);
         window.display();
     }
 
