@@ -11,10 +11,15 @@ void MandelbrotScene::onUpdate(float deltaTime)
 {
 	if (!calculated) {
 		sycl::queue q(sycl::gpu_selector{});
-		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 800, -2, 0, 1.25, -1.25);
+		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 800, left, right, top ,bottom);
 		std::cout << "Generated MANDELBROT\n";
-		calculated = true;
+		//calculated = true;
 	}
+
+	bottom += 0.02 * deltaTime;
+	top -= 0.02 * deltaTime;
+	left += 0.02 * deltaTime;
+	right -= 0.02 * deltaTime;
 }
 
 void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
