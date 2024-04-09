@@ -89,4 +89,12 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 			}
 		});
 	}).wait();
+
+	// Copy device memory image to the host memory for rendering on SFML
+	q->memcpy(imageBuffer, imageUSM, sizeof(uint32_t) * width * height);
+
+	// Free up the device memory
+	sycl::free(imageUSM, *q);
+
+	return;
 }
