@@ -29,7 +29,7 @@ int main()
         mainScene.onUpdate(deltaTime);
         
         window.clear();
-        mainScene.onRender(deltaTime);
+        mainScene.onRender(window, deltaTime);
         window.display();
     }
 
