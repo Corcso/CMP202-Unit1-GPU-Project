@@ -1,31 +1,56 @@
 #include "MandelbrotScene.h"
 #include "MandelbrotGenerator.h"
-
+#include "Input.h"
 
 MandelbrotScene::MandelbrotScene()
 {
-	imageBuffer = new uint32_t[1000 * 800];
+	imageBuffer = new uint32_t[1000 * 1000];
 }
 
-void MandelbrotScene::onUpdate(float deltaTime)
+void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 {
+
+	if (Input::GetVScrollDelta() != 0) {
+		//std::cout << "X: " << Input::GetMouseX() << " Y: " << Input::GetMouseY() << " D: " << Input::GetVScrollDelta() << "\n";
+
+		float xAlong = (float)Input::GetMouseX() / window.getSize().x;
+		float yAlong = (float)Input::GetMouseY() / window.getSize().y;
+		float deltaScroll = Input::GetVScrollDelta();
+		//std::cout << "pX: " << xAlong << " pY: " << yAlong << "\n";
+
+		double scrollFactor = (right - left) * 0.1;
+
+		left += xAlong * scrollFactor * deltaScroll;
+		right -= (1 - xAlong) * scrollFactor * deltaScroll;
+		top -= yAlong * scrollFactor * deltaScroll;
+		bottom += (1 - yAlong) * scrollFactor * deltaScroll;
+
+		// Fix aspect ratio if needed
+		top = bottom + (right - left);
+
+		std::cout << "ASPECT: " << (right - left) / (top - bottom)  << "DIF: " << (right - left) << "\n";
+
+
+	}
+
+
 	if (!calculated) {
 		sycl::queue q/*(sycl::gpu_selector{})*/;
-		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 800, left, right, top ,bottom);
-		std::cout << "Generated MANDELBROT\n";
+		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom);
+		//std::cout << "Generated MANDELBROT\n";
 		//calculated = true;
 	}
 
-	bottom += 0.02 * deltaTime;
+	/*bottom += 0.02 * deltaTime;
 	top -= 0.02 * deltaTime;
 	left += 0.02 * deltaTime;
-	right -= 0.02 * deltaTime;
+	right -= 0.02 * deltaTime;*/
 }
 
 void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 {
 	sf::Texture texture;
-	texture.create(1000, 800);
+	texture.create(1000, 1000);
 
 	sf::Sprite sprite(texture); // needed to draw the texture on screen
 

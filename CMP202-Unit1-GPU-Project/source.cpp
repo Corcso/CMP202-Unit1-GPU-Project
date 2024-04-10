@@ -9,7 +9,7 @@ int main()
     MandelbrotScene mainScene;
 
     // Create the window object in SFML
-    sf::RenderWindow window(sf::VideoMode(1000, 800), "CMP 202 GPU");
+    sf::RenderWindow window(sf::VideoMode(1000, 1000), "CMP 202 GPU");
 
     // Start the clock for getting deltatime
     sf::Clock clock;
@@ -34,11 +34,13 @@ int main()
         }
 
         // Every frame run the scenes update and render functions. 
-        mainScene.onUpdate(deltaTime);
+        mainScene.onUpdate(window, deltaTime);
         
         window.clear();
         mainScene.onRender(window, deltaTime);
         window.display();
+
+        Input::UpdateEndOfFrame();
     }
 
     return 0;
