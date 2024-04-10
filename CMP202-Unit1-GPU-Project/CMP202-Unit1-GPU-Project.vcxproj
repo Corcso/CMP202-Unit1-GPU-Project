@@ -88,11 +88,13 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="Input.cpp" />
     <ClCompile Include="MandelbrotGenerator.cpp" />
     <ClCompile Include="MandelbrotScene.cpp" />
     <ClCompile Include="source.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="Input.h" />
     <ClInclude Include="MandelbrotGenerator.h" />
     <ClInclude Include="MandelbrotScene.h" />
   </ItemGroup>

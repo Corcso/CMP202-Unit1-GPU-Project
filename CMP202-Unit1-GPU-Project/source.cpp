@@ -1,6 +1,7 @@
 #include <SFML/Graphics.hpp>
 
 #include "MandelbrotScene.h"
+#include "Input.h"
 
 int main()
 {
@@ -23,6 +24,13 @@ int main()
         {
             if (event.type == sf::Event::Closed)
                 window.close();
+            else if (event.type == sf::Event::MouseWheelScrolled) {
+                if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
+                    Input::SetVScrollDelta(event.mouseWheelScroll.delta);
+                    Input::SetMouseX(event.mouseWheelScroll.x);
+                    Input::SetMouseY(event.mouseWheelScroll.y);
+                }
+            }
         }
 
         // Every frame run the scenes update and render functions. 
