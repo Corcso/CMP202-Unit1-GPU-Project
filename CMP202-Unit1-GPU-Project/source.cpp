@@ -1,5 +1,5 @@
 #include <SFML/Graphics.hpp>
-
+#include <iostream>
 #include "MandelbrotScene.h"
 #include "Input.h"
 
@@ -10,7 +10,7 @@ int main()
 
     // Create the window object in SFML
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "CMP 202 GPU");
-
+    window.setKeyRepeatEnabled(false);
     // Start the clock for getting deltatime
     sf::Clock clock;
     while (window.isOpen())
@@ -33,6 +33,7 @@ int main()
             }
             else if (event.type == sf::Event::KeyPressed) {
                 Input::LogKeyPress(event.key.code);
+                std::cout << event.key.code << "\n";
             }
             else if (event.type == sf::Event::KeyReleased) {
                 Input::LogKeyRelease(event.key.code);

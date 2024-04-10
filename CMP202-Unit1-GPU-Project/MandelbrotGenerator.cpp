@@ -30,7 +30,7 @@ double MandelbrotGenerator::c_abs(ComplexD c)
 	return sycl::sqrt(c.x * c.x + c.y * c.y);
 }
 
-void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom)
+void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
 {
 
 	// Get a device allocation for the image array
@@ -54,14 +54,14 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 			// Iterate z = z^2 + c until z moves more than 2 units
 			// away from (0, 0), or we've iterated too many times.
 			int iterations = 0;
-			while (c_abs(z) < 2.0 && iterations < 1000)
+			while (c_abs(z) < 2.0 && iterations < max_iterations)
 			{
 				z = c_add(c_mul(z, z), c);
 
 				++iterations;
 			}
 
-			if (iterations == 1000)
+			if (iterations == max_iterations)
 			{
 				// z didn't escape from the circle.
 				// This point is in the Mandelbrot set.
@@ -101,7 +101,7 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 	return;
 }
 
-void MandelbrotGenerator::GenerateBasicSequentialCPU(uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom)
+void MandelbrotGenerator::GenerateBasicSequentialCPU(uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
 {
 	for (int i = 0; i < width * height; i++) {
 		if (i == 400500) {
@@ -125,14 +125,14 @@ void MandelbrotGenerator::GenerateBasicSequentialCPU(uint32_t* imageBuffer, int 
 		// Iterate z = z^2 + c until z moves more than 2 units
 		// away from (0, 0), or we've iterated too many times.
 		int iterations = 0;
-		while (c_abs(z) < 2.0 && iterations < 1500)
+		while (c_abs(z) < 2.0 && iterations < max_iterations)
 		{
 			z = c_add(c_mul(z, z), c);
 
 			++iterations;
 		}
 
-		if (iterations >= 1000)
+		if (iterations >= max_iterations)
 		{
 			// z didn't escape from the circle.
 			// This point is in the Mandelbrot set.

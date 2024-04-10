@@ -29,14 +29,22 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 		top = bottom + (right - left);
 
 		std::cout << "ASPECT: " << (right - left) / (top - bottom)  << "DIF: " << (right - left) << "\n";
-
-
 	}
+
+	if (Input::IsKeyPressed(sf::Keyboard::Equal)) {
+		currentMaxIterations *= 2;
+		std::cout << "ITER: " << currentMaxIterations << "\n";
+	}
+	if (Input::IsKeyPressed(sf::Keyboard::Hyphen)) {
+		currentMaxIterations /= 2;
+		std::cout << "ITER: " << currentMaxIterations << "\n";
+	}
+
 
 
 	if (!calculated) {
 		sycl::queue q/*(sycl::gpu_selector{})*/;
-		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom);
+		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations);
 		//std::cout << "Generated MANDELBROT\n";
 		//calculated = true;
 	}

@@ -15,5 +15,7 @@ private:
 	uint32_t* imageBuffer;
 
 	double left = -2, right = 0, top = 1, bottom = -1;
+
+	int currentMaxIterations = 1000;
 };
 
