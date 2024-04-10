@@ -31,6 +31,12 @@ int main()
                     Input::SetMouseY(event.mouseWheelScroll.y);
                 }
             }
+            else if (event.type == sf::Event::KeyPressed) {
+                Input::LogKeyPress(event.key.code);
+            }
+            else if (event.type == sf::Event::KeyReleased) {
+                Input::LogKeyRelease(event.key.code);
+            }
         }
 
         // Every frame run the scenes update and render functions. 

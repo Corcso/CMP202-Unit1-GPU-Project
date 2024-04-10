@@ -1,7 +1,11 @@
 #pragma once
+#include "SFML/Graphics.hpp"
+
 class Input
 {
 public:
+	Input();
+
 	static Input* GetSingleton();
 
 	static void UpdateEndOfFrame();
@@ -13,8 +17,20 @@ public:
 	static int GetMouseX();
 	static int GetMouseY();
 
+	static void LogKeyPress(sf::Keyboard::Key key);
+	static void LogKeyRelease(sf::Keyboard::Key key);
+	static bool IsKeyPressed(sf::Keyboard::Key key);
+	static bool IsKeyDown(sf::Keyboard::Key key);
+	static bool IsKeyReleased(sf::Keyboard::Key key);
+	static bool IsKeyUp(sf::Keyboard::Key key);
+
 private:
 	static Input* singleton;
+
+	enum class KeyState {PRESSED, DOWN, RELEASED, UP};
+
+	// Array of keystates array index for each key enum.
+	KeyState* keys;
 
 	float vScrollDelta;
 	int mouseX;
