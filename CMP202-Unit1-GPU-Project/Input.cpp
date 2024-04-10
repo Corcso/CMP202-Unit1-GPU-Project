@@ -20,7 +20,7 @@ void Input::SetVScrollDelta(float delta)
     GetSingleton()->vScrollDelta = delta;
 }
 
-float Input::GetVScrollDelta(float delta)
+float Input::GetVScrollDelta()
 {
     return GetSingleton()->vScrollDelta;
 }

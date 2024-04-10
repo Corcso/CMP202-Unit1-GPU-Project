@@ -7,7 +7,7 @@ public:
 	static void UpdateEndOfFrame();
 
 	static void SetVScrollDelta(float delta);
-	static float GetVScrollDelta(float delta);
+	static float GetVScrollDelta();
 	static void SetMouseX(int value);
 	static void SetMouseY(int value);
 	static int GetMouseX();
