@@ -10,7 +10,7 @@ MandelbrotScene::MandelbrotScene()
 void MandelbrotScene::onUpdate(float deltaTime)
 {
 	if (!calculated) {
-		sycl::queue q(sycl::gpu_selector{});
+		sycl::queue q/*(sycl::gpu_selector{})*/;
 		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 800, left, right, top ,bottom);
 		std::cout << "Generated MANDELBROT\n";
 		//calculated = true;
