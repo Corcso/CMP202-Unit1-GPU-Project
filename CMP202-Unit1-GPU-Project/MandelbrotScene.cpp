@@ -5,6 +5,32 @@
 MandelbrotScene::MandelbrotScene()
 {
 	imageBuffer = new uint32_t[1000 * 1000];
+
+	// Load assets for SFML
+	if (!consolas.loadFromFile("./Assets/consola.ttf"))
+	{
+		// Add code for error and quit
+		return;
+	}
+
+	zoomLevel_Text.setFont(consolas);
+	maxIterations_Text.setFont(consolas);
+	zoomWarning_Text.setFont(consolas);
+
+	zoomLevel_Text.setFillColor(sf::Color::Red);
+	maxIterations_Text.setFillColor(sf::Color::Red);
+	zoomWarning_Text.setFillColor(sf::Color::Yellow);
+
+	zoomLevel_Text.setCharacterSize(24);
+	maxIterations_Text.setCharacterSize(24);
+	zoomWarning_Text.setCharacterSize(36);
+
+	zoomLevel_Text.setPosition(sf::Vector2f(0, 0));
+	maxIterations_Text.setPosition(sf::Vector2f(0, 30));
+	zoomWarning_Text.setPosition(sf::Vector2f(0, 950));
+
+	zoomWarning_Text.setString("APPROACHING PRECISION LIMIT");
+	zoomWarning_Text.setPosition(sf::Vector2f(500 - (zoomWarning_Text.getLocalBounds().width / 2), 950));
 }
 
 void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
@@ -49,10 +75,9 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 		//calculated = true;
 	}
 
-	/*bottom += 0.02 * deltaTime;
-	top -= 0.02 * deltaTime;
-	left += 0.02 * deltaTime;
-	right -= 0.02 * deltaTime;*/
+	// Change the SFML text assets to be updated with this frames data. 
+	zoomLevel_Text.setString("Zoom Level: " + std::to_string(1.0 / ((right - left) / 2.0)) + "x");
+	maxIterations_Text.setString("Max Iterations: [-] " + std::to_string(currentMaxIterations) + " [+]");
 }
 
 void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
@@ -76,4 +101,7 @@ void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 	// ...
 
 	window.draw(sprite);
+	window.draw(zoomLevel_Text);
+	window.draw(maxIterations_Text);
+	if((right-left) < 0.000000000001) window.draw(zoomWarning_Text);
 }

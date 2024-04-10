@@ -17,5 +17,13 @@ private:
 	double left = -2, right = 0, top = 1, bottom = -1;
 
 	int currentMaxIterations = 1000;
+
+	// SFML ASSETS
+	sf::Font consolas;
+
+	// SFML Objects
+	sf::Text zoomLevel_Text;
+	sf::Text maxIterations_Text;
+	sf::Text zoomWarning_Text;
 };
 

@@ -67,12 +67,12 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 				// This point is in the Mandelbrot set.
 				//image[y][x] = 0x000000; // black
 
-				uint8_t red = (iterations % 256);  // Example for red gradient
-				uint8_t green = 0; ((iterations + 100) % 256);                  // Set green to 0
-				uint8_t blue = (iterations % 256);                   // Set blue to 0
+				//uint8_t red = (iterations % 256);  // Example for red gradient
+				//uint8_t green = 0; ((iterations + 100) % 256);                  // Set green to 0
+				//uint8_t blue = (iterations % 256);                   // Set blue to 0
 
-				imageUSM[i[0]] = (red << 24) | (green << 16) | (blue << 16) | 0xFF;
-				//imageUSM[i[0]] = 0x000000FF;
+				//imageUSM[i[0]] = (red << 24) | (green << 16) | (blue << 16) | 0xFF;
+				imageUSM[i[0]] = 0x000000FF;
 			}
 			else
 			{
@@ -85,7 +85,7 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 				uint8_t green = static_cast<uint8_t>(128.0f + cos(iterations * 0.16f) * 128.0f); //0;// static_cast<uint8_t>(128.0f + sin(iterations * 0.16f) * 128.0f);
 				uint8_t blue = static_cast<uint8_t>(128.0f + sin(iterations * 0.17f) * 128.0f);
 
-				imageUSM[i[0]] = (red << 24) | (green << 16) | (blue << 16) | 0xFF;
+				imageUSM[i[0]] = (red << 24) | (green << 16) | (blue << 8) | 0xFF;
 				//imageUSM[i[0]] = 0xFFFFFFFF;
 
 			}
