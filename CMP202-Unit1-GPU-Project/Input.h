@@ -27,12 +27,12 @@ public:
 private:
 	static Input* singleton;
 
-	enum class KeyState {PRESSED, DOWN, RELEASED, UP};
+	enum class KeyState {PRESSED, DOWN, RELEASED, UP, PRESSED_AND_RELEASED_SAME_FRAME};
 
 	// Array of keystates array index for each key enum.
 	KeyState* keys;
 
-	float vScrollDelta;
+	float vScrollDelta = 0;
 	int mouseX;
 	int mouseY;
 };
