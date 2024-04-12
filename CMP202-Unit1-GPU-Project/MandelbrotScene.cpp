@@ -4,6 +4,8 @@
 
 MandelbrotScene::MandelbrotScene()
 {
+
+	reRenderRequired = true;
 	imageBuffer = new uint32_t[1000 * 1000];
 
 	// Load assets for SFML
@@ -55,24 +57,33 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 		top = bottom + (right - left);
 
 		std::cout << "ASPECT: " << (right - left) / (top - bottom)  << "DIF: " << (right - left) << "\n";
+
+		// Since the zoom has changed, re render the mandelbrot
+		reRenderRequired = true;
 	}
 
 	if (Input::IsKeyPressed(sf::Keyboard::Equal)) {
+		// Double the current max iterations
 		currentMaxIterations *= 2;
-		std::cout << "ITER: " << currentMaxIterations << "\n";
+
+		// Since the iterations have changed, re render the mandelbrot
+		reRenderRequired = true;
 	}
 	if (Input::IsKeyPressed(sf::Keyboard::Hyphen)) {
+		// Half the current max iterations
 		currentMaxIterations /= 2;
-		std::cout << "ITER: " << currentMaxIterations << "\n";
+
+		// Since the iterations have changed, re render the mandelbrot
+		reRenderRequired = true;
 	}
 
 
 
-	if (!calculated) {
+	if (reRenderRequired) {
 		sycl::queue q/*(sycl::gpu_selector{})*/;
 		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations);
 		//std::cout << "Generated MANDELBROT\n";
-		//calculated = true;
+		reRenderRequired = false;
 	}
 
 	// Change the SFML text assets to be updated with this frames data. 
