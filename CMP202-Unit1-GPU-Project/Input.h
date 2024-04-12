@@ -24,6 +24,13 @@ public:
 	static bool IsKeyReleased(sf::Keyboard::Key key);
 	static bool IsKeyUp(sf::Keyboard::Key key);
 
+	static void LogMousePress(bool left = true);
+	static void LogMouseRelease(bool left = true);
+	static bool IsMousePressed(bool left = true);
+	static bool IsMouseDown(bool left = true);
+	static bool IsMouseReleased(bool left = true);
+	static bool IsMouseUp(bool left = true);
+
 private:
 	static Input* singleton;
 
@@ -31,6 +38,9 @@ private:
 
 	// Array of keystates array index for each key enum.
 	KeyState* keys;
+	// Use keystate for mouse as its the same pattern
+	KeyState mouseLeft; 
+	KeyState mouseRight; 
 
 	float vScrollDelta = 0;
 	int mouseX;

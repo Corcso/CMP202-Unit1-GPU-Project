@@ -38,6 +38,16 @@ int main()
             else if (event.type == sf::Event::KeyReleased) {
                 Input::LogKeyRelease(event.key.code);
             }
+            else if (event.type == sf::Event::MouseButtonPressed)
+            {
+                if (event.mouseButton.button == sf::Mouse::Right) Input::LogMousePress(false);
+                else if (event.mouseButton.button == sf::Mouse::Left) Input::LogMousePress();
+            }
+            else if (event.type == sf::Event::MouseButtonReleased)
+            {
+                if (event.mouseButton.button == sf::Mouse::Right) Input::LogMouseRelease(false);
+                else if (event.mouseButton.button == sf::Mouse::Left) Input::LogMouseRelease();
+            }
         }
 
         // Every frame run the scenes update and render functions. 

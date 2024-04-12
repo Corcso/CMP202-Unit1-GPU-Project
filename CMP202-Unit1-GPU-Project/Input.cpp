@@ -92,3 +92,45 @@ bool Input::IsKeyUp(sf::Keyboard::Key key)
 {
     return (GetSingleton()->keys[key] == KeyState::RELEASED || GetSingleton()->keys[key] == KeyState::UP || GetSingleton()->keys[key] == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
 }
+
+void Input::LogMousePress(bool left)
+{
+    if (left) GetSingleton()->mouseLeft = KeyState::PRESSED;
+    else GetSingleton()->mouseRight = KeyState::PRESSED;
+}
+
+void Input::LogMouseRelease(bool left)
+{
+    if (left) { 
+        if(GetSingleton()->mouseLeft == KeyState::PRESSED) GetSingleton()->mouseLeft = KeyState::PRESSED_AND_RELEASED_SAME_FRAME;
+        else GetSingleton()->mouseLeft = KeyState::RELEASED; 
+    }
+    else {
+        if (GetSingleton()->mouseRight == KeyState::PRESSED) GetSingleton()->mouseRight = KeyState::PRESSED_AND_RELEASED_SAME_FRAME;
+        else GetSingleton()->mouseRight = KeyState::RELEASED;
+    }
+}
+
+bool Input::IsMousePressed(bool left)
+{
+    if(left) return (GetSingleton()->mouseLeft == KeyState::PRESSED || GetSingleton()->mouseLeft == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+    else return (GetSingleton()->mouseRight == KeyState::PRESSED || GetSingleton()->mouseRight == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+}
+
+bool Input::IsMouseDown(bool left)
+{
+    if (left) return (GetSingleton()->mouseLeft == KeyState::PRESSED || GetSingleton()->mouseLeft == KeyState::DOWN || GetSingleton()->mouseLeft == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+    else return (GetSingleton()->mouseRight == KeyState::PRESSED || GetSingleton()->mouseRight == KeyState::DOWN || GetSingleton()->mouseRight == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+}
+
+bool Input::IsMouseReleased(bool left)
+{
+    if (left) return (GetSingleton()->mouseLeft == KeyState::RELEASED || GetSingleton()->mouseLeft == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+    else return (GetSingleton()->mouseRight == KeyState::RELEASED || GetSingleton()->mouseRight == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+}
+
+bool Input::IsMouseUp(bool left)
+{
+    if (left) return (GetSingleton()->mouseLeft == KeyState::RELEASED || GetSingleton()->mouseLeft == KeyState::UP || GetSingleton()->mouseLeft == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+    else return (GetSingleton()->mouseRight == KeyState::RELEASED || GetSingleton()->mouseRight == KeyState::UP || GetSingleton()->mouseRight == KeyState::PRESSED_AND_RELEASED_SAME_FRAME);
+}
