@@ -28,5 +28,12 @@ private:
 	sf::Text zoomLevel_Text;
 	sf::Text maxIterations_Text;
 	sf::Text zoomWarning_Text;
+
+	// Box draw zooming variables
+	int mouseStartX_BoxDraw;
+	int mouseStartY_BoxDraw;
+	sf::RectangleShape boxDrawBox;
+	bool renderDrawBox;
+	
 };
 

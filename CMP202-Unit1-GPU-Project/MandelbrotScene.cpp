@@ -33,11 +33,16 @@ MandelbrotScene::MandelbrotScene()
 
 	zoomWarning_Text.setString("APPROACHING PRECISION LIMIT");
 	zoomWarning_Text.setPosition(sf::Vector2f(500 - (zoomWarning_Text.getLocalBounds().width / 2), 950));
+
+	renderDrawBox = false;
+	boxDrawBox.setOutlineColor(sf::Color::White);
+	boxDrawBox.setFillColor(sf::Color::Transparent);
+	boxDrawBox.setOutlineThickness(1);
 }
 
 void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 {
-
+	// Scroll Zooming
 	if (Input::GetVScrollDelta() != 0) {
 		//std::cout << "X: " << Input::GetMouseX() << " Y: " << Input::GetMouseY() << " D: " << Input::GetVScrollDelta() << "\n";
 
@@ -60,6 +65,33 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 		// Since the zoom has changed, re render the mandelbrot
 		reRenderRequired = true;
+	}
+	// Box Drawing
+	if (Input::IsMousePressed(false)) {
+		mouseStartX_BoxDraw = Input::GetMouseX();
+		mouseStartY_BoxDraw = Input::GetMouseY();
+		renderDrawBox = true;
+	} // Else if here because ignore same frame clicks
+	else if (Input::IsMouseReleased(false)) {
+
+		// Only zoom to the box if the mouse is at a different position in either direction
+		// Dont want boxes with 0 as a dimention
+		if (mouseStartX_BoxDraw != Input::GetMouseX() && mouseStartY_BoxDraw != Input::GetMouseY()) {
+			left += (double)std::min(mouseStartX_BoxDraw, Input::GetMouseX()) / window.getSize().x * (right - left);
+			right = left + (double)std::max(mouseStartX_BoxDraw, Input::GetMouseX()) / window.getSize().x * (right - left);
+			top += (double)std::min(mouseStartY_BoxDraw, Input::GetMouseY()) / window.getSize().y * (bottom - top);
+			bottom = top + (double)std::max(mouseStartY_BoxDraw, Input::GetMouseY()) / window.getSize().y * (bottom - top);
+
+			// Since the zoom has changed, re render the mandelbrot
+			reRenderRequired = true;
+		}
+
+		renderDrawBox = false;
+	}
+	// Set the size and position of the box draw display box
+	if (Input::IsMouseDown(false)) {
+		boxDrawBox.setPosition(mouseStartX_BoxDraw, mouseStartY_BoxDraw);
+		boxDrawBox.setSize(sf::Vector2f(Input::GetMouseX() - mouseStartX_BoxDraw, Input::GetMouseY() - mouseStartY_BoxDraw));
 	}
 
 	if (Input::IsKeyPressed(sf::Keyboard::Equal)) {
@@ -114,5 +146,6 @@ void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 	window.draw(sprite);
 	window.draw(zoomLevel_Text);
 	window.draw(maxIterations_Text);
+	if (renderDrawBox) window.draw(boxDrawBox);
 	if((right-left) < 0.000000000001) window.draw(zoomWarning_Text);
 }

@@ -52,6 +52,10 @@ int main()
                 Input::SetMouseX(event.mouseButton.x);
                 Input::SetMouseY(event.mouseButton.y);
             }
+            else if (event.type == sf::Event::MouseMoved) {
+                Input::SetMouseX(event.mouseMove.x);
+                Input::SetMouseY(event.mouseMove.y);
+            }
         }
 
         // Every frame run the scenes update and render functions. 
