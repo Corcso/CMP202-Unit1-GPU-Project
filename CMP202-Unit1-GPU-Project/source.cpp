@@ -42,11 +42,15 @@ int main()
             {
                 if (event.mouseButton.button == sf::Mouse::Right) Input::LogMousePress(false);
                 else if (event.mouseButton.button == sf::Mouse::Left) Input::LogMousePress();
+                Input::SetMouseX(event.mouseButton.x);
+                Input::SetMouseY(event.mouseButton.y);
             }
             else if (event.type == sf::Event::MouseButtonReleased)
             {
                 if (event.mouseButton.button == sf::Mouse::Right) Input::LogMouseRelease(false);
                 else if (event.mouseButton.button == sf::Mouse::Left) Input::LogMouseRelease();
+                Input::SetMouseX(event.mouseButton.x);
+                Input::SetMouseY(event.mouseButton.y);
             }
         }
 

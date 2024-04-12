@@ -30,6 +30,15 @@ void Input::UpdateEndOfFrame()
         else if (GetSingleton()->keys[k] == KeyState::RELEASED) GetSingleton()->keys[k] = KeyState::UP;
         else if (GetSingleton()->keys[k] == KeyState::PRESSED_AND_RELEASED_SAME_FRAME) GetSingleton()->keys[k] = KeyState::UP;
     }
+
+    // Update the mouse buttons
+    if (GetSingleton()->mouseLeft == KeyState::PRESSED) GetSingleton()->mouseLeft = KeyState::DOWN;
+    else if (GetSingleton()->mouseLeft == KeyState::RELEASED) GetSingleton()->mouseLeft = KeyState::UP;
+    else if (GetSingleton()->mouseLeft == KeyState::PRESSED_AND_RELEASED_SAME_FRAME) GetSingleton()->mouseLeft = KeyState::UP;
+
+    if (GetSingleton()->mouseRight == KeyState::PRESSED) GetSingleton()->mouseRight = KeyState::DOWN;
+    else if (GetSingleton()->mouseRight == KeyState::RELEASED) GetSingleton()->mouseRight = KeyState::UP;
+    else if (GetSingleton()->mouseRight == KeyState::PRESSED_AND_RELEASED_SAME_FRAME) GetSingleton()->mouseRight = KeyState::UP;
 }
 
 void Input::SetVScrollDelta(float delta)
