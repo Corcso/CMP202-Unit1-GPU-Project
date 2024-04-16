@@ -119,7 +119,8 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 	if (reRenderRequired) {
 		sycl::queue q(sycl::gpu_selector{});
 		auto start = std::chrono::steady_clock::now();
-		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations);
+		//MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations);
+		MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, 1000, 1000, left, right, top, bottom);
 		auto end = std::chrono::steady_clock::now();
 		timeTaken_Text.setString("Generation time: " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) + "mcs");
 		//std::cout << "Generated MANDELBROT\n";
