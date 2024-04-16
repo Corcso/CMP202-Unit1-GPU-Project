@@ -1,6 +1,7 @@
 #include "MandelbrotScene.h"
 #include "MandelbrotGenerator.h"
 #include "Input.h"
+#include <chrono>
 
 MandelbrotScene::MandelbrotScene()
 {
@@ -18,17 +19,21 @@ MandelbrotScene::MandelbrotScene()
 	zoomLevel_Text.setFont(consolas);
 	maxIterations_Text.setFont(consolas);
 	zoomWarning_Text.setFont(consolas);
+	timeTaken_Text.setFont(consolas);
 
 	zoomLevel_Text.setFillColor(sf::Color::Red);
 	maxIterations_Text.setFillColor(sf::Color::Red);
+	timeTaken_Text.setFillColor(sf::Color::Red);
 	zoomWarning_Text.setFillColor(sf::Color::Yellow);
 
 	zoomLevel_Text.setCharacterSize(24);
 	maxIterations_Text.setCharacterSize(24);
+	timeTaken_Text.setCharacterSize(24);
 	zoomWarning_Text.setCharacterSize(36);
 
 	zoomLevel_Text.setPosition(sf::Vector2f(0, 0));
 	maxIterations_Text.setPosition(sf::Vector2f(0, 30));
+	timeTaken_Text.setPosition(sf::Vector2f(0, 60));
 	zoomWarning_Text.setPosition(sf::Vector2f(0, 950));
 
 	zoomWarning_Text.setString("APPROACHING PRECISION LIMIT");
@@ -112,8 +117,11 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 
 	if (reRenderRequired) {
-		sycl::queue q/*(sycl::gpu_selector{})*/;
+		sycl::queue q(sycl::gpu_selector{});
+		auto start = std::chrono::steady_clock::now();
 		MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations);
+		auto end = std::chrono::steady_clock::now();
+		timeTaken_Text.setString("Generation time: " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) + "mcs");
 		//std::cout << "Generated MANDELBROT\n";
 		reRenderRequired = false;
 	}
@@ -146,6 +154,7 @@ void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 	window.draw(sprite);
 	window.draw(zoomLevel_Text);
 	window.draw(maxIterations_Text);
+	window.draw(timeTaken_Text);
 	if (renderDrawBox) window.draw(boxDrawBox);
 	if((right-left) < 0.000000000001) window.draw(zoomWarning_Text);
 }

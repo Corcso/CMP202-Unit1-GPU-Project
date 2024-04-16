@@ -28,6 +28,7 @@ private:
 	sf::Text zoomLevel_Text;
 	sf::Text maxIterations_Text;
 	sf::Text zoomWarning_Text;
+	sf::Text timeTaken_Text;
 
 	// Box draw zooming variables
 	int mouseStartX_BoxDraw;
