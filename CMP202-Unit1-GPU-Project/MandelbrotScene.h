@@ -11,6 +11,11 @@ public:
 	void onRender(sf::RenderWindow& window, float deltaTime);
 
 private:
+	enum class GenerationAlgorithm {
+		STANDARD, SUBGROUP_AUTOLIMIT
+	};
+	GenerationAlgorithm currentGenerationAlgorithm;
+
 	// A pointer to the image buffer array, this stores all the pixel values. 
 	uint32_t* imageBuffer;
 
@@ -26,6 +31,7 @@ private:
 	sf::Font consolas;
 
 	// SFML Objects
+	sf::RectangleShape statsOverlay;
 	sf::Text zoomLevel_Text;
 	sf::Text maxIterations_Text;
 	sf::Text minIterations_Text;
@@ -37,6 +43,13 @@ private:
 	int mouseStartY_BoxDraw;
 	sf::RectangleShape boxDrawBox;
 	bool renderDrawBox;
-	
+
+	// Settings box
+	bool settingsOpen;
+	sf::RectangleShape settingsOverlay;
+	sf::Text generationAlgoTitle_Text;
+	sf::Text generationalgoValue_Text;
+	enum class Setting { GENERATION_ALGORITHM };
+	Setting currentSetting;
 };
 
