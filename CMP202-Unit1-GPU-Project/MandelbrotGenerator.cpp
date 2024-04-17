@@ -30,14 +30,20 @@ double MandelbrotGenerator::c_abs(ComplexD c)
 	return sycl::sqrt(c.x * c.x + c.y * c.y);
 }
 
-void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
+int MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
 {
 
 	// Get a device allocation for the image array
 	uint32_t* imageUSM = sycl::malloc_device<uint32_t>(width * height, *q);
-	
+
+	// Create a buffer to store the total number of iterations
+	sycl::buffer<int, 1> iterCountBuffer(1);
+
 	// Start the kernels (blank image array already on device)
 	q->submit([&](sycl::handler& cgh) {
+
+		auto atomicIterationAccessor = iterCountBuffer.get_access<sycl::access::mode::atomic>(cgh);
+
 		cgh.parallel_for(sycl::range<1>(width * height), [=](sycl::id<1> i) {
 			// Calculate the row and column from the index
 			int row = i[0] / width;
@@ -89,6 +95,8 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 				//imageUSM[i[0]] = 0xFFFFFFFF;
 
 			}
+
+			atomicIterationAccessor[0].fetch_add(iterations);
 		});
 	}).wait();
 
@@ -98,7 +106,10 @@ void MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, i
 	// Free up the device memory
 	sycl::free(imageUSM, *q);
 
-	return;
+	// Get an accessor for the atomic total iteration buffer
+	auto totalIterationCountAcc = iterCountBuffer.get_access<sycl::access::mode::read>();
+
+	return totalIterationCountAcc[0];
 }
 
 void MandelbrotGenerator::GenerateBasicSequentialCPU(uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
@@ -163,15 +174,18 @@ void MandelbrotGenerator::GenerateBasicSequentialCPU(uint32_t* imageBuffer, int 
 	}
 }
 
-void MandelbrotGenerator::GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int minIterations)
+int MandelbrotGenerator::GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int minIterations, int maxIterations)
 {
 	// Get a device allocation for the image array
 	uint32_t* imageUSM = sycl::malloc_device<uint32_t>(width * height, *q);
 
 	//std::cout << "Allowed " << q->get_device().get_info<sycl::info::device::max_work_group_size>() << " work groups, trying " << floor(sqrt(q->get_device().get_info<sycl::info::device::max_work_group_size>())) << "\n";
-
+	sycl::buffer<int, 1> iterCountBuffer(1);
 	// Start the kernels (blank image array already on device)
 	q->submit([&](sycl::handler& cgh) {
+
+		auto atomicIterationAccessor = iterCountBuffer.get_access<sycl::access::mode::atomic>(cgh);
+
 		cgh.parallel_for(
 			sycl::nd_range<2>{sycl::range<2>(width, height), 
 			sycl::range<2>(
@@ -196,19 +210,22 @@ void MandelbrotGenerator::GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t
 			// Currently on max iterations, number of max iterations to go up to. 
 			int currentMaxIterations = minIterations;
 
+			// If we define out complex numbers and iterations here this means that we don't need to 
+			// reiterate over the previous iterations and can just continue if needed. 
+			// Work out the point in the complex plane that
+						// corresponds to this pixel in the output image.
+			ComplexD c{ left + (col * (right - left) / width),
+				top + (row * (bottom - top) / height) };
+
+			// Start off z at (0, 0).
+			ComplexD z{ 0.0, 0.0 };
+
+			// Iterate z = z^2 + c until z moves more than 2 units
+			// away from (0, 0), or we've iterated too many times.
+			int iterations = 0;
+
 			while (continueGenerating) {
 
-				// Work out the point in the complex plane that
-						// corresponds to this pixel in the output image.
-				ComplexD c{ left + (col * (right - left) / width),
-					top + (row * (bottom - top) / height) };
-
-				// Start off z at (0, 0).
-				ComplexD z{ 0.0, 0.0 };
-
-				// Iterate z = z^2 + c until z moves more than 2 units
-				// away from (0, 0), or we've iterated too many times.
-				int iterations = 0;
 				while (c_abs(z) < 2.0 && iterations < currentMaxIterations)
 				{
 					z = c_add(c_mul(z, z), c);
@@ -246,7 +263,7 @@ void MandelbrotGenerator::GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t
 				}
 
 				// Tempoary
-				switch (currentMaxIterations) {
+				/*switch (currentMaxIterations) {
 				case 125:
 					imageUSM[width * row + col] = 0xFFFF00FF;
 					break;
@@ -271,14 +288,16 @@ void MandelbrotGenerator::GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t
 				case 16000:
 					imageUSM[width * row + col] = 0x000000FF;
 					break;
-				}
+				}*/
 
 				// Only continue generating if there was both escapes and non escapes in the subgroup
 				continueGenerating = sycl::any_of_group(subGroup, escaped) && sycl::any_of_group(subGroup, !escaped);
 				currentMaxIterations *= 2;
 				// Put a hard stop if the number of iterations gets too high 
-				if (currentMaxIterations > 16000) continueGenerating = false;
+				if (currentMaxIterations > maxIterations) continueGenerating = false;
 			}
+			// Add on this pixels total iterations to the array
+			atomicIterationAccessor[0].fetch_add(iterations);
 			});
 		}).wait();
 
@@ -288,5 +307,8 @@ void MandelbrotGenerator::GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t
 		// Free up the device memory
 		sycl::free(imageUSM, *q);
 
-		return;
+		// Get an accessor for the atomic total iteration buffer
+		auto totalIterationCountAcc = iterCountBuffer.get_access<sycl::access::mode::read>();
+
+		return totalIterationCountAcc[0];
 }
