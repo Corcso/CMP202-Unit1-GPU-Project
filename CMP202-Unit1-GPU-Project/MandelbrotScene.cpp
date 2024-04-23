@@ -8,7 +8,8 @@ MandelbrotScene::MandelbrotScene()
 	currentGenerationAlgorithm = GenerationAlgorithm::STANDARD;
 
 	reRenderRequired = true;
-	imageBuffer = new uint32_t[1000 * 1000];
+	width = 1000; height = 1000; aspect = 1;
+	imageBuffer = new uint32_t[width * height];
 
 	// Load assets for SFML
 	if (!consolas.loadFromFile("./Assets/consola.ttf"))
@@ -26,23 +27,27 @@ MandelbrotScene::MandelbrotScene()
 	minIterations_Text.setFont(consolas);
 	zoomWarning_Text.setFont(consolas);
 	timeTaken_Text.setFont(consolas);
+	iterations_Text.setFont(consolas);
 
-	zoomLevel_Text.setFillColor(sf::Color::Red);
-	maxIterations_Text.setFillColor(sf::Color::Red);
-	minIterations_Text.setFillColor(sf::Color::Red);
-	timeTaken_Text.setFillColor(sf::Color::Red);
+	zoomLevel_Text.setFillColor(sf::Color::White);
+	maxIterations_Text.setFillColor(sf::Color::White);
+	minIterations_Text.setFillColor(sf::Color::White);
+	timeTaken_Text.setFillColor(sf::Color::White);
+	iterations_Text.setFillColor(sf::Color::White);
 	zoomWarning_Text.setFillColor(sf::Color::Yellow);
 
-	zoomLevel_Text.setCharacterSize(24);
-	maxIterations_Text.setCharacterSize(24);
-	minIterations_Text.setCharacterSize(24);
-	timeTaken_Text.setCharacterSize(24);
+	zoomLevel_Text.setCharacterSize(20);
+	maxIterations_Text.setCharacterSize(20);
+	minIterations_Text.setCharacterSize(20);
+	timeTaken_Text.setCharacterSize(20);
+	iterations_Text.setCharacterSize(20);
 	zoomWarning_Text.setCharacterSize(36);
 
 	zoomLevel_Text.setPosition(sf::Vector2f(0, 0));
-	maxIterations_Text.setPosition(sf::Vector2f(0, 30));
-	minIterations_Text.setPosition(sf::Vector2f(0, 60));
-	timeTaken_Text.setPosition(sf::Vector2f(0, 90));
+	maxIterations_Text.setPosition(sf::Vector2f(0, 25));
+	minIterations_Text.setPosition(sf::Vector2f(0, 50));
+	timeTaken_Text.setPosition(sf::Vector2f(0, 75));
+	iterations_Text.setPosition(sf::Vector2f(0, 100));
 	zoomWarning_Text.setPosition(sf::Vector2f(0, 950));
 
 	zoomWarning_Text.setString("APPROACHING PRECISION LIMIT");
@@ -65,15 +70,27 @@ MandelbrotScene::MandelbrotScene()
 
 	generationAlgoTitle_Text.setFont(consolas);
 	generationAlgoTitle_Text.setCharacterSize(24);
-	generationAlgoTitle_Text.setFillColor(sf::Color::White);
+	generationAlgoTitle_Text.setFillColor(sf::Color::Yellow);
 	generationAlgoTitle_Text.setPosition(sf::Vector2f(120, 110));
 	generationAlgoTitle_Text.setString("Generation Algorithm");
 
 	generationalgoValue_Text.setFont(consolas);
 	generationalgoValue_Text.setCharacterSize(24);
-	generationalgoValue_Text.setFillColor(sf::Color::White);
-	generationalgoValue_Text.setPosition(sf::Vector2f(120, 130));
+	generationalgoValue_Text.setFillColor(sf::Color::Yellow);
+	generationalgoValue_Text.setPosition(sf::Vector2f(120, 135));
 	generationalgoValue_Text.setString("Standard");
+
+	resolutionTitle_Text.setFont(consolas);
+	resolutionTitle_Text.setCharacterSize(24);
+	resolutionTitle_Text.setFillColor(sf::Color::White);
+	resolutionTitle_Text.setPosition(sf::Vector2f(120, 175));
+	resolutionTitle_Text.setString("Resolution");
+
+	resolutionValue_Text.setFont(consolas);
+	resolutionValue_Text.setCharacterSize(24);
+	resolutionValue_Text.setFillColor(sf::Color::White);
+	resolutionValue_Text.setPosition(sf::Vector2f(120, 200));
+	resolutionValue_Text.setString("1000 x 1000");
 }
 
 void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
@@ -101,7 +118,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			bottom += (1 - yAlong) * scrollFactor * deltaScroll;
 
 			// Fix aspect ratio if needed
-			top = bottom + (right - left);
+			top = bottom + ((right - left) * aspect);
 
 			std::cout << "ASPECT: " << (right - left) / (top - bottom) << "DIF: " << (right - left) << "\n";
 
@@ -169,19 +186,21 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 		if (reRenderRequired) {
 			sycl::queue q(sycl::gpu_selector{});
+			int iterationsTaken;
 			auto start = std::chrono::steady_clock::now();
 			switch (currentGenerationAlgorithm) {
 			case GenerationAlgorithm::STANDARD:
-				std::cout << "Iterations: " << MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top, bottom, currentMaxIterations) << "\n";
+				iterationsTaken = MandelbrotGenerator::GenerateBasic(&q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
 				break;
 			case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
-				std::cout << "Iterations: " << MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, 1000, 1000, left, right, top, bottom, currentMinIterations, currentMaxIterations) << "\n";
+				iterationsTaken = MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, width, height, left, right, top, bottom, currentMinIterations, currentMaxIterations);
 				break;
 			}
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations) << "\n";
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, 1000, 1000, left, right, top, bottom, currentMinIterations, currentMaxIterations) << "\n";
 			auto end = std::chrono::steady_clock::now();
 			timeTaken_Text.setString("Generation time: " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) + "mcs");
+			iterations_Text.setString("Iterations: " + std::to_string(iterationsTaken));
 			//std::cout << "Generated MANDELBROT\n";
 			reRenderRequired = false;
 		}
@@ -199,17 +218,27 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 		// First handle input of changing the setting we are editing
 		if (Input::IsKeyPressed(sf::Keyboard::Down)) {
 			// Increase the enum by 1
-			currentSetting = (Setting)((((int)currentSetting) + 1) % 1);
+			currentSetting = (Setting)((((int)currentSetting) + 1) % 2);
 		}
 		if (Input::IsKeyPressed(sf::Keyboard::Up)) {
 			// Increase the enum by total possibilities - 1 moving it back 1
-			currentSetting = (Setting)((((int)currentSetting) + 0) % 1);
+			currentSetting = (Setting)((((int)currentSetting) + 1) % 2);
 		}
 		switch (currentSetting) {
 		case Setting::GENERATION_ALGORITHM:
 
+			generationAlgoTitle_Text.setFillColor(sf::Color::Yellow);
+			generationalgoValue_Text.setFillColor(sf::Color::Yellow);
+			resolutionTitle_Text.setFillColor(sf::Color::White);
+			resolutionValue_Text.setFillColor(sf::Color::White);
+
+			break;
+		case Setting::RESOLUTION:
+
 			generationAlgoTitle_Text.setFillColor(sf::Color::White);
 			generationalgoValue_Text.setFillColor(sf::Color::White);
+			resolutionTitle_Text.setFillColor(sf::Color::Yellow);
+			resolutionValue_Text.setFillColor(sf::Color::Yellow);
 
 			break;
 		}
@@ -224,13 +253,40 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				switch (currentGenerationAlgorithm) {
 				case GenerationAlgorithm::STANDARD:
 					generationalgoValue_Text.setString("Standard");
+					currentMinIterations = 0;
 					break;
 				case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
 					generationalgoValue_Text.setString("Subgroup AutoLimit");
+					currentMinIterations = currentMaxIterations;
 					break;
 				}
 
 				break;
+			case Setting::RESOLUTION:
+				// Increase the enum by 1
+				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 2) % 3);
+				delete imageBuffer;
+				switch (currentResolutionSetting) {
+				case Resolution::r1000x1000:
+					resolutionValue_Text.setString("1000 x 1000");
+					width = 1000;
+					height = 1000; 
+					aspect = 1;
+					break;
+				case Resolution::r1920x1080:
+					resolutionValue_Text.setString("1920 x 1080");
+					width = 1920;
+					height = 1080;
+					aspect = (float)1920 / 1080;
+					break;
+				case Resolution::r500x500:
+					resolutionValue_Text.setString("500 x 500");
+					width = 500;
+					height = 500;
+					aspect = 1;
+					break;
+				}
+				imageBuffer = new uint32_t[width * height];
 			}
 		}
 		if (Input::IsKeyPressed(sf::Keyboard::Left)) {
@@ -243,22 +299,60 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				switch (currentGenerationAlgorithm) {
 				case GenerationAlgorithm::STANDARD:
 					generationalgoValue_Text.setString("Standard");
+					currentMinIterations = 0;
 					break;
 				case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
 					generationalgoValue_Text.setString("Subgroup AutoLimit");
+					currentMinIterations = currentMaxIterations;
 					break;
 				}
 
 				break;
+			case Setting::RESOLUTION:
+				// Increase the enum by 1
+				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 2) % 3);
+				delete imageBuffer;
+				switch (currentResolutionSetting) {
+				case Resolution::r1000x1000:
+					resolutionValue_Text.setString("1000 x 1000");
+					width = 1000;
+					height = 1000;
+					aspect = 1;
+					break;
+				case Resolution::r1920x1080:
+					resolutionValue_Text.setString("1920 x 1080");
+					width = 1920;
+					height = 1080;
+					aspect = (float)1920 / 1080;
+					break;
+				case Resolution::r500x500:
+					resolutionValue_Text.setString("500 x 500");
+					width = 500;
+					height = 500;
+					aspect = 1;
+					break;
+				}
+				imageBuffer = new uint32_t[width * height];
+				break;
 			}
 		}
 	}
+	// ===============
+	// MISC GUI UPDATE
+	// ===============
+	statsOverlay.setSize(sf::Vector2f(std::max(std::max(
+		std::max(zoomLevel_Text.getGlobalBounds().width,
+			maxIterations_Text.getGlobalBounds().width),
+		std::max(minIterations_Text.getGlobalBounds().width,
+			timeTaken_Text.getGlobalBounds().width)),
+		iterations_Text.getGlobalBounds().width
+	) + 10, 130));
 }
 
 void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 {
 	sf::Texture texture;
-	texture.create(1000, 1000);
+	texture.create(width, height);
 
 	sf::Sprite sprite(texture); // needed to draw the texture on screen
 
@@ -281,11 +375,14 @@ void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 	window.draw(maxIterations_Text);
 	if(currentGenerationAlgorithm == GenerationAlgorithm::SUBGROUP_AUTOLIMIT) window.draw(minIterations_Text);
 	window.draw(timeTaken_Text);
+	window.draw(iterations_Text);
 	if (renderDrawBox) window.draw(boxDrawBox);
 	if((right-left) < 0.000000000001) window.draw(zoomWarning_Text);
 	if (settingsOpen) {
 		window.draw(settingsOverlay);
 		window.draw(generationAlgoTitle_Text);
 		window.draw(generationalgoValue_Text);
+		window.draw(resolutionTitle_Text);
+		window.draw(resolutionValue_Text);
 	}
 }

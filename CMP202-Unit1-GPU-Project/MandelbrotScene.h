@@ -25,7 +25,7 @@ private:
 	double left = -2, right = 0, top = 1, bottom = -1;
 
 	int currentMaxIterations = 1000;
-	int currentMinIterations = 1000;
+	int currentMinIterations = 0;
 
 	// SFML ASSETS
 	sf::Font consolas;
@@ -37,6 +37,7 @@ private:
 	sf::Text minIterations_Text;
 	sf::Text zoomWarning_Text;
 	sf::Text timeTaken_Text;
+	sf::Text iterations_Text;
 
 	// Box draw zooming variables
 	int mouseStartX_BoxDraw;
@@ -49,7 +50,16 @@ private:
 	sf::RectangleShape settingsOverlay;
 	sf::Text generationAlgoTitle_Text;
 	sf::Text generationalgoValue_Text;
-	enum class Setting { GENERATION_ALGORITHM };
-	Setting currentSetting;
+	sf::Text resolutionTitle_Text;
+	sf::Text resolutionValue_Text;
+	enum class Setting { GENERATION_ALGORITHM, RESOLUTION };
+	Setting currentSetting = Setting::GENERATION_ALGORITHM;
+
+	// Settings
+	enum class Resolution { r1000x1000, r1920x1080, r500x500};
+	Resolution currentResolutionSetting = Resolution::r1000x1000;
+	int width;
+	int height;
+	float aspect; // width / height
 };
 

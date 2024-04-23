@@ -5,12 +5,13 @@
 
 int main()
 {
-    // Scene object where all update and render code goes. 
-    MandelbrotScene mainScene;
-
     // Create the window object in SFML
     sf::RenderWindow window(sf::VideoMode(1000, 1000), "CMP 202 GPU");
     window.setKeyRepeatEnabled(false);
+
+    // Scene object where all update and render code goes. 
+    MandelbrotScene mainScene;
+
     // Start the clock for getting deltatime
     sf::Clock clock;
     while (window.isOpen())
