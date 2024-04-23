@@ -56,7 +56,7 @@ private:
 	Setting currentSetting = Setting::GENERATION_ALGORITHM;
 
 	// Settings
-	enum class Resolution { r1000x1000, r1920x1080, r500x500};
+	enum class Resolution { r1000x1000, r1920x1080, r500x500, r3440x1440};
 	Resolution currentResolutionSetting = Resolution::r1000x1000;
 	int width;
 	int height;

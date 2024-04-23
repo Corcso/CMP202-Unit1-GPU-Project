@@ -189,7 +189,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 
 		if (reRenderRequired) {
-			sycl::queue q(sycl::gpu_selector{});
+			sycl::queue q/*(sycl::gpu_selector{})*/;
 			int iterationsTaken;
 			auto start = std::chrono::steady_clock::now();
 			switch (currentGenerationAlgorithm) {
@@ -268,7 +268,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				break;
 			case Setting::RESOLUTION:
 				// Increase the enum by 1
-				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 1) % 3);
+				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 1) % 4);
 				delete imageBuffer;
 				switch (currentResolutionSetting) {
 				case Resolution::r1000x1000:
@@ -288,6 +288,12 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					width = 500;
 					height = 500;
 					aspect = 1;
+					break;
+				case Resolution::r3440x1440:
+					resolutionValue_Text.setString("3440 x 1440");
+					width = 3440;
+					height = 1440;
+					aspect = (float)3440 / 1440;
 					break;
 				}
 				imageBuffer = new uint32_t[width * height];
@@ -316,7 +322,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				break;
 			case Setting::RESOLUTION:
 				// Increase the enum by 1
-				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 2) % 3);
+				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 3) % 4);
 				delete imageBuffer;
 				switch (currentResolutionSetting) {
 				case Resolution::r1000x1000:
@@ -336,6 +342,12 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					width = 500;
 					height = 500;
 					aspect = 1;
+					break;
+				case Resolution::r3440x1440:
+					resolutionValue_Text.setString("3440 x 1440");
+					width = 3440;
+					height = 1440;
+					aspect = (float)3440 / 1440;
 					break;
 				}
 				imageBuffer = new uint32_t[width * height];
