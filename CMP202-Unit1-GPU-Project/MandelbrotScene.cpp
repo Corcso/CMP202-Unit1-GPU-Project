@@ -107,18 +107,18 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 			float xAlong = (float)Input::GetMouseX() / window.getSize().x;
 			float yAlong = (float)Input::GetMouseY() / window.getSize().y;
-			float deltaScroll = Input::GetVScrollDelta();
+			float deltaScroll = std::min(Input::GetVScrollDelta(), 5.0f); // Limit scroll delta to prevent over scroll on laggy frames
 			//std::cout << "pX: " << xAlong << " pY: " << yAlong << "\n";
 
 			double scrollFactor = (right - left) * 0.1;
 
-			left += xAlong * scrollFactor * deltaScroll;
-			right -= (1 - xAlong) * scrollFactor * deltaScroll;
+			left += xAlong * scrollFactor * deltaScroll * aspect;
+			right -= (1 - xAlong) * scrollFactor * deltaScroll * aspect;
 			top -= yAlong * scrollFactor * deltaScroll;
 			bottom += (1 - yAlong) * scrollFactor * deltaScroll;
 
 			// Fix aspect ratio if needed
-			top = bottom + ((right - left) * aspect);
+			top = bottom + ((right - left) / aspect);
 
 			std::cout << "ASPECT: " << (right - left) / (top - bottom) << "DIF: " << (right - left) << "\n";
 
@@ -179,6 +179,10 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			currentMinIterations /= 2;
 
 			// Since the iterations have changed, re render the mandelbrot
+			reRenderRequired = true;
+		}
+		// If R is pressed regenerate the set no matter if anything has changed. 
+		if (Input::IsKeyPressed(sf::Keyboard::R)) {
 			reRenderRequired = true;
 		}
 
@@ -264,7 +268,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				break;
 			case Setting::RESOLUTION:
 				// Increase the enum by 1
-				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 2) % 3);
+				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 1) % 3);
 				delete imageBuffer;
 				switch (currentResolutionSetting) {
 				case Resolution::r1000x1000:
@@ -287,6 +291,8 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					break;
 				}
 				imageBuffer = new uint32_t[width * height];
+				window.setView(sf::View(sf::FloatRect(0, 0, width, height)));
+				break;
 			}
 		}
 		if (Input::IsKeyPressed(sf::Keyboard::Left)) {
@@ -333,6 +339,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					break;
 				}
 				imageBuffer = new uint32_t[width * height];
+				window.setView(sf::View(sf::FloatRect(0, 0, width, height)));
 				break;
 			}
 		}
