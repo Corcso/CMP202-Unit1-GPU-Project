@@ -199,6 +199,9 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
 				iterationsTaken = MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, width, height, left, right, top, bottom, currentMinIterations, currentMaxIterations);
 				break;
+			case GenerationAlgorithm::STANDARD_BUFFERS:
+				iterationsTaken = MandelbrotGenerator::GenerateBasicWithBuffers(&q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
+				break;
 			}
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations) << "\n";
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, 1000, 1000, left, right, top, bottom, currentMinIterations, currentMaxIterations) << "\n";
@@ -252,7 +255,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case Setting::GENERATION_ALGORITHM:
 
 				// Increase the enum by 1
-				currentGenerationAlgorithm = (GenerationAlgorithm)((((int)currentGenerationAlgorithm) + 1) % 2);
+				currentGenerationAlgorithm = (GenerationAlgorithm)((((int)currentGenerationAlgorithm) + 1) % 3);
 
 				switch (currentGenerationAlgorithm) {
 				case GenerationAlgorithm::STANDARD:
@@ -261,6 +264,10 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					break;
 				case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
 					generationalgoValue_Text.setString("Subgroup AutoLimit");
+					currentMinIterations = currentMaxIterations;
+					break;
+				case GenerationAlgorithm::STANDARD_BUFFERS:
+					generationalgoValue_Text.setString("Standard with Buffers");
 					currentMinIterations = currentMaxIterations;
 					break;
 				}
@@ -306,7 +313,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case Setting::GENERATION_ALGORITHM:
 
 				// Increase the enum by total possibilities - 1 moving it back 1
-				currentGenerationAlgorithm = (GenerationAlgorithm)((((int)currentGenerationAlgorithm) + 1) % 2);
+				currentGenerationAlgorithm = (GenerationAlgorithm)((((int)currentGenerationAlgorithm) + 2) % 3);
 
 				switch (currentGenerationAlgorithm) {
 				case GenerationAlgorithm::STANDARD:
@@ -315,6 +322,10 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					break;
 				case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
 					generationalgoValue_Text.setString("Subgroup AutoLimit");
+					currentMinIterations = currentMaxIterations;
+					break;
+				case GenerationAlgorithm::STANDARD_BUFFERS:
+					generationalgoValue_Text.setString("Standard with Buffers");
 					currentMinIterations = currentMaxIterations;
 					break;
 				}

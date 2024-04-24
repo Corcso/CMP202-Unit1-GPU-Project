@@ -14,6 +14,7 @@ namespace MandelbrotGenerator
 	double c_abs(ComplexD c);
 
 	int GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations);
+	int GenerateBasicWithBuffers(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations);
 	void GenerateBasicSequentialCPU(uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations);
 
 	int GenerateSubgroupAutoprecision(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int minIterations, int maxIterations);

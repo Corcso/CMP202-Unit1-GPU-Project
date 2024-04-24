@@ -112,6 +112,79 @@ int MandelbrotGenerator::GenerateBasic(sycl::queue* q, uint32_t* imageBuffer, in
 	return totalIterationCountAcc[0];
 }
 
+int MandelbrotGenerator::GenerateBasicWithBuffers(sycl::queue* q, uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
+{
+	// Create a buffer for the image to generate on. 
+	sycl::buffer<int, 1> imageSyclBuffer(width * height);
+
+	// Create a buffer to store the total number of iterations
+	sycl::buffer<int, 1> iterCountBuffer(1);
+
+	// Start the kernels (blank image array already on device)
+	q->submit([&](sycl::handler& cgh) {
+
+		// Get relevant accessors
+		auto atomicIterationAccessor = iterCountBuffer.get_access<sycl::access::mode::atomic>(cgh);
+		auto imageAccessor = imageSyclBuffer.get_access<sycl::access::mode::write>(cgh);
+
+		cgh.parallel_for(sycl::range<1>(width * height), [=](sycl::id<1> i) {
+			// Calculate the row and column from the index
+			int row = i[0] / width;
+			int col = i[0] - (row * width);
+
+			// Work out the point in the complex plane that
+					// corresponds to this pixel in the output image.
+			ComplexD c{ left + (col * (right - left) / width),
+				top + (row * (bottom - top) / height) };
+
+			// Start off z at (0, 0).
+			ComplexD z{ 0.0, 0.0 };
+
+			// Iterate z = z^2 + c until z moves more than 2 units
+			// away from (0, 0), or we've iterated too many times.
+			int iterations = 0;
+			while (c_abs(z) < 2.0 && iterations < max_iterations)
+			{
+				z = c_add(c_mul(z, z), c);
+
+				++iterations;
+			}
+
+			if (iterations == max_iterations)
+			{
+				// z didn't escape from the circle, this point is in the Mandelbrot set.
+
+				imageAccessor[i[0]] = 0x000000FF;
+			}
+			else
+			{
+				// z escaped within less than MAX_ITERATIONS iterations, this point isn't in the set.
+				
+				// Create a colorful palette based on the number of iterations
+				uint8_t red = static_cast<uint8_t>(128.0f + sin(iterations * 0.15f) * 128.0f);
+				uint8_t green = static_cast<uint8_t>(128.0f + cos(iterations * 0.16f) * 128.0f); //0;// static_cast<uint8_t>(128.0f + sin(iterations * 0.16f) * 128.0f);
+				uint8_t blue = static_cast<uint8_t>(128.0f + sin(iterations * 0.17f) * 128.0f);
+
+				imageAccessor[i[0]] = (red << 24) | (green << 16) | (blue << 8) | 0xFF;
+			}
+			// Atomically add the iterations done onto the total
+			atomicIterationAccessor[0].fetch_add(iterations);
+			});
+		}).wait();
+
+		// Copy the data from the image buffer to the pointer passed into the function
+		auto imageAccessor = imageSyclBuffer.get_access<sycl::access::mode::read>();
+
+		for (int i = 0; i < width * height; i++) {
+			imageBuffer[i] = imageAccessor[i];
+		}
+
+		// Get an accessor for the atomic total iteration buffer
+		auto totalIterationCountAcc = iterCountBuffer.get_access<sycl::access::mode::read>();
+
+		return totalIterationCountAcc[0];
+}
+
 void MandelbrotGenerator::GenerateBasicSequentialCPU(uint32_t* imageBuffer, int width, int height, double left, double right, double top, double bottom, int max_iterations)
 {
 	for (int i = 0; i < width * height; i++) {

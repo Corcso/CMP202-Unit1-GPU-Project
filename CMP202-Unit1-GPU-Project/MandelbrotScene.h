@@ -12,7 +12,7 @@ public:
 
 private:
 	enum class GenerationAlgorithm {
-		STANDARD, SUBGROUP_AUTOLIMIT
+		STANDARD, SUBGROUP_AUTOLIMIT, STANDARD_BUFFERS
 	};
 	GenerationAlgorithm currentGenerationAlgorithm;
 
