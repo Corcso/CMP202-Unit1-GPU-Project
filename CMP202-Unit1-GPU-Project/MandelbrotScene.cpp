@@ -91,6 +91,28 @@ MandelbrotScene::MandelbrotScene()
 	resolutionValue_Text.setFillColor(sf::Color::White);
 	resolutionValue_Text.setPosition(sf::Vector2f(120, 200));
 	resolutionValue_Text.setString("1000 x 1000");
+
+	deviceTitle_Text.setFont(consolas);
+	deviceTitle_Text.setCharacterSize(24);
+	deviceTitle_Text.setFillColor(sf::Color::White);
+	deviceTitle_Text.setPosition(sf::Vector2f(120, 240));
+	deviceTitle_Text.setString("Device");
+	
+	deviceValue_Text.setFont(consolas);
+	deviceValue_Text.setCharacterSize(24);
+	deviceValue_Text.setFillColor(sf::Color::White);
+	deviceValue_Text.setPosition(sf::Vector2f(120, 265));
+	sycl::queue* testQ;
+	try {
+		testQ = new sycl::queue(sycl::cpu_selector{});
+		deviceValue_Text.setString("CPU Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+	}
+	catch (const sycl::exception& e) {
+		testQ = new sycl::queue;
+		deviceValue_Text.setString("CPU Not Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+	}
+	delete testQ;
+
 }
 
 void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
@@ -120,7 +142,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			// Fix aspect ratio if needed
 			top = bottom + ((right - left) / aspect);
 
-			std::cout << "ASPECT: " << (right - left) / (top - bottom) << "DIF: " << (right - left) << "\n";
+			//std::cout << "ASPECT: " << (right - left) / (top - bottom) << "DIF: " << (right - left) << "\n";
 
 			// Since the zoom has changed, re render the mandelbrot
 			reRenderRequired = true;
@@ -189,18 +211,37 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 
 		if (reRenderRequired) {
-			sycl::queue q/*(sycl::gpu_selector{})*/;
+
+			sycl::queue* q/*(sycl::gpu_selector{})*/;
+			switch (currentDevice) {
+			case Device::CPU:
+				try {
+					q = new sycl::queue(sycl::cpu_selector{});
+				}
+				catch (const sycl::exception& e) {
+					q = new sycl::queue;
+				}
+				break;
+			case Device::GPU:
+				try {
+					q = new sycl::queue(sycl::gpu_selector{});
+				}
+				catch (const sycl::exception& e) {
+					q = new sycl::queue;
+				}
+				break;
+			}
 			int iterationsTaken;
 			auto start = std::chrono::steady_clock::now();
 			switch (currentGenerationAlgorithm) {
 			case GenerationAlgorithm::STANDARD:
-				iterationsTaken = MandelbrotGenerator::GenerateBasic(&q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
+				iterationsTaken = MandelbrotGenerator::GenerateBasic(q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
 				break;
 			case GenerationAlgorithm::SUBGROUP_AUTOLIMIT:
-				iterationsTaken = MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, width, height, left, right, top, bottom, currentMinIterations, currentMaxIterations);
+				iterationsTaken = MandelbrotGenerator::GenerateSubgroupAutoprecision(q, imageBuffer, width, height, left, right, top, bottom, currentMinIterations, currentMaxIterations);
 				break;
 			case GenerationAlgorithm::STANDARD_BUFFERS:
-				iterationsTaken = MandelbrotGenerator::GenerateBasicWithBuffers(&q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
+				iterationsTaken = MandelbrotGenerator::GenerateBasicWithBuffers(q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
 				break;
 			}
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations) << "\n";
@@ -210,6 +251,9 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			iterations_Text.setString("Iterations: " + std::to_string(iterationsTaken));
 			//std::cout << "Generated MANDELBROT\n";
 			reRenderRequired = false;
+
+			// Delete the queue
+			delete q;
 		}
 
 		// Change the SFML text assets to be updated with this frames data. 
@@ -225,11 +269,11 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 		// First handle input of changing the setting we are editing
 		if (Input::IsKeyPressed(sf::Keyboard::Down)) {
 			// Increase the enum by 1
-			currentSetting = (Setting)((((int)currentSetting) + 1) % 2);
+			currentSetting = (Setting)((((int)currentSetting) + 1) % 3);
 		}
 		if (Input::IsKeyPressed(sf::Keyboard::Up)) {
 			// Increase the enum by total possibilities - 1 moving it back 1
-			currentSetting = (Setting)((((int)currentSetting) + 1) % 2);
+			currentSetting = (Setting)((((int)currentSetting) + 2) % 3);
 		}
 		switch (currentSetting) {
 		case Setting::GENERATION_ALGORITHM:
@@ -238,6 +282,8 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			generationalgoValue_Text.setFillColor(sf::Color::Yellow);
 			resolutionTitle_Text.setFillColor(sf::Color::White);
 			resolutionValue_Text.setFillColor(sf::Color::White);
+			deviceTitle_Text.setFillColor(sf::Color::White);
+			deviceValue_Text.setFillColor(sf::Color::White);
 
 			break;
 		case Setting::RESOLUTION:
@@ -246,11 +292,25 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			generationalgoValue_Text.setFillColor(sf::Color::White);
 			resolutionTitle_Text.setFillColor(sf::Color::Yellow);
 			resolutionValue_Text.setFillColor(sf::Color::Yellow);
+			deviceTitle_Text.setFillColor(sf::Color::White); 
+			deviceValue_Text.setFillColor(sf::Color::White);
+
+			break;
+		case Setting::DEVICE:
+
+			generationAlgoTitle_Text.setFillColor(sf::Color::White);
+			generationalgoValue_Text.setFillColor(sf::Color::White);
+			resolutionTitle_Text.setFillColor(sf::Color::White);
+			resolutionValue_Text.setFillColor(sf::Color::White);
+			deviceTitle_Text.setFillColor(sf::Color::Yellow);
+			deviceValue_Text.setFillColor(sf::Color::Yellow);
 
 			break;
 		}
 		// Next handle input of changing the setting itself
 		if (Input::IsKeyPressed(sf::Keyboard::Right)) {
+			// Create test Q, used when switching devices;
+			sycl::queue* testQ;
 			switch (currentSetting) {
 			case Setting::GENERATION_ALGORITHM:
 
@@ -306,9 +366,46 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				imageBuffer = new uint32_t[width * height];
 				window.setView(sf::View(sf::FloatRect(0, 0, width, height)));
 				break;
+			case Setting::DEVICE:
+				// Increase the enum by 1
+				currentDevice = (Device)((((int)currentDevice) + 1) % 2);
+				switch (currentDevice) {
+				case Device::CPU:
+					deviceValue_Text.setString("CPU");
+
+					try {
+						testQ = new sycl::queue(sycl::cpu_selector{});
+						deviceValue_Text.setString("CPU Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+					catch (const sycl::exception& e) {
+						testQ = new sycl::queue;
+						deviceValue_Text.setString("CPU Not Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+
+					break;
+				case Device::GPU:
+					deviceValue_Text.setString("GPU");
+
+					try {
+						testQ = new sycl::queue(sycl::gpu_selector{});
+						deviceValue_Text.setString("GPU Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+					catch (const sycl::exception& e) {
+						testQ = new sycl::queue;
+						deviceValue_Text.setString("GPU Not Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+
+					break;
+				}
+				break;
 			}
+
+			// Delete the test queue
+			delete testQ;
 		}
 		if (Input::IsKeyPressed(sf::Keyboard::Left)) {
+			// Create test Q, used when switching devices;
+			sycl::queue* testQ;
 			switch (currentSetting) {
 			case Setting::GENERATION_ALGORITHM:
 
@@ -332,7 +429,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 				break;
 			case Setting::RESOLUTION:
-				// Increase the enum by 1
+				// Decrease the enum by 1 (By increasing by total - 1)
 				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 3) % 4);
 				delete imageBuffer;
 				switch (currentResolutionSetting) {
@@ -364,7 +461,42 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				imageBuffer = new uint32_t[width * height];
 				window.setView(sf::View(sf::FloatRect(0, 0, width, height)));
 				break;
+			case Setting::DEVICE:
+				// Decrease the enum by 1 (By increasing by total - 1)
+				currentDevice = (Device)((((int)currentDevice) + 1) % 2);
+				switch (currentDevice) {
+				case Device::CPU:
+					deviceValue_Text.setString("CPU");
+					
+					try {
+						testQ = new sycl::queue(sycl::cpu_selector{});
+						deviceValue_Text.setString("CPU Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+					catch (const sycl::exception& e) {
+						testQ = new sycl::queue;
+						deviceValue_Text.setString("CPU Not Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+					
+					break;
+				case Device::GPU:
+					deviceValue_Text.setString("GPU");
+
+					try {
+						testQ = new sycl::queue(sycl::gpu_selector{});
+						deviceValue_Text.setString("GPU Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+					catch (const sycl::exception& e) {
+						testQ = new sycl::queue;
+						deviceValue_Text.setString("GPU Not Found - " + testQ->get_device().get_info<sycl::info::device::name>());
+					}
+
+					break;
+				}
+				break;
 			}
+
+			// Delete the test queue
+			delete testQ;
 		}
 	}
 	// ===============
@@ -414,5 +546,7 @@ void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 		window.draw(generationalgoValue_Text);
 		window.draw(resolutionTitle_Text);
 		window.draw(resolutionValue_Text);
+		window.draw(deviceTitle_Text);
+		window.draw(deviceValue_Text);
 	}
 }

@@ -52,7 +52,9 @@ private:
 	sf::Text generationalgoValue_Text;
 	sf::Text resolutionTitle_Text;
 	sf::Text resolutionValue_Text;
-	enum class Setting { GENERATION_ALGORITHM, RESOLUTION };
+	sf::Text deviceTitle_Text;
+	sf::Text deviceValue_Text;
+	enum class Setting { GENERATION_ALGORITHM, RESOLUTION, DEVICE };
 	Setting currentSetting = Setting::GENERATION_ALGORITHM;
 
 	// Settings
@@ -61,5 +63,8 @@ private:
 	int width;
 	int height;
 	float aspect; // width / height
+
+	enum class Device {CPU, GPU};
+	Device currentDevice = Device::CPU;
 };
 
