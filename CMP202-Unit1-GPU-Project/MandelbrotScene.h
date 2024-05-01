@@ -39,12 +39,6 @@ private:
 	sf::Text timeTaken_Text;
 	sf::Text iterations_Text;
 
-	// Box draw zooming variables
-	int mouseStartX_BoxDraw;
-	int mouseStartY_BoxDraw;
-	sf::RectangleShape boxDrawBox;
-	bool renderDrawBox;
-
 	// Settings box
 	bool settingsOpen;
 	sf::RectangleShape settingsOverlay;
