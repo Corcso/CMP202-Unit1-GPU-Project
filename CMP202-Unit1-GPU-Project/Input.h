@@ -34,6 +34,8 @@ public:
 private:
 	static Input* singleton;
 
+	// Enum for all possible keystates
+	// Keys can be pressed and released before a new frame is processed hence the 5th state. 
 	enum class KeyState {PRESSED, DOWN, RELEASED, UP, PRESSED_AND_RELEASED_SAME_FRAME};
 
 	// Array of keystates array index for each key enum.
@@ -42,8 +44,8 @@ private:
 	KeyState mouseLeft; 
 	KeyState mouseRight; 
 
-	float vScrollDelta = 0;
-	int mouseX;
-	int mouseY;
+	float vScrollDelta = 0; // Scroll wheel vertical scroll delta
+	int mouseX; // Mouse X position
+	int mouseY; // Mouse Y position
 };
 

@@ -19,12 +19,14 @@ int main()
         // Get the delta time
         float deltaTime = clock.restart().asSeconds();
 
-        // Handle a window close
+        // Handle all events
         sf::Event event;
         while (window.pollEvent(event))
         {
+            // Window closed
             if (event.type == sf::Event::Closed)
                 window.close();
+            // Mouse scrolled
             else if (event.type == sf::Event::MouseWheelScrolled) {
                 if (event.mouseWheelScroll.wheel == sf::Mouse::VerticalWheel) {
                     Input::SetVScrollDelta(event.mouseWheelScroll.delta);
@@ -32,6 +34,7 @@ int main()
                     Input::SetMouseY(event.mouseWheelScroll.y);
                 }
             }
+            // Key Pressed and Released
             else if (event.type == sf::Event::KeyPressed) {
                 Input::LogKeyPress(event.key.code);
                 std::cout << event.key.code << "\n";
@@ -39,6 +42,7 @@ int main()
             else if (event.type == sf::Event::KeyReleased) {
                 Input::LogKeyRelease(event.key.code);
             }
+            // Mouse Pressed and Released
             else if (event.type == sf::Event::MouseButtonPressed)
             {
                 if (event.mouseButton.button == sf::Mouse::Right) Input::LogMousePress(false);
@@ -53,6 +57,7 @@ int main()
                 Input::SetMouseX(event.mouseButton.x);
                 Input::SetMouseY(event.mouseButton.y);
             }
+            // Mouse moved
             else if (event.type == sf::Event::MouseMoved) {
                 Input::SetMouseX(event.mouseMove.x);
                 Input::SetMouseY(event.mouseMove.y);
@@ -66,6 +71,8 @@ int main()
         mainScene.onRender(window, deltaTime);
         window.display();
 
+        // Run input updates for end of frame
+        // Things like Pressed -> Down etc. 
         Input::UpdateEndOfFrame();
     }
 

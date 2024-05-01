@@ -18,10 +18,12 @@ MandelbrotScene::MandelbrotScene()
 		return;
 	}
 
+	// Setup the stats overlay box
 	statsOverlay.setFillColor(sf::Color(40, 40, 40, 127));
 	statsOverlay.setPosition(sf::Vector2f(0, 0));
 	statsOverlay.setSize(sf::Vector2f(300, 100));
 
+	// Setup all stats text objects as well as the zoom warning text
 	zoomLevel_Text.setFont(consolas);
 	maxIterations_Text.setFont(consolas);
 	minIterations_Text.setFont(consolas);
@@ -97,6 +99,8 @@ MandelbrotScene::MandelbrotScene()
 	deviceValue_Text.setCharacterSize(24);
 	deviceValue_Text.setFillColor(sf::Color::White);
 	deviceValue_Text.setPosition(sf::Vector2f(120, 265));
+
+	// Try and select the cpu, and change the device text string to be the device chosen. 
 	sycl::queue* testQ;
 	try {
 		testQ = new sycl::queue(sycl::cpu_selector{});
@@ -179,8 +183,9 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 
 		if (reRenderRequired) {
-
-			sycl::queue* q/*(sycl::gpu_selector{})*/;
+			// Create a queue pointer
+			sycl::queue* q;
+			// Set the queue up with a device selector based on the device chosen in the settings
 			switch (currentDevice) {
 			case Device::CPU:
 				try {
@@ -199,8 +204,9 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 				}
 				break;
 			}
-			int iterationsTaken;
-			auto start = std::chrono::steady_clock::now();
+			// Switch over the chosen algorithm setting and generate using that algorithm
+			int iterationsTaken; // Total number of iterations made accross the image
+			auto start = std::chrono::steady_clock::now(); // Start the clock
 			switch (currentGenerationAlgorithm) {
 			case GenerationAlgorithm::STANDARD:
 				iterationsTaken = MandelbrotGenerator::GenerateBasic(q, imageBuffer, width, height, left, right, top, bottom, currentMaxIterations);
@@ -214,10 +220,13 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			}
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateBasic(&q, imageBuffer, 1000, 1000, left, right, top ,bottom, currentMaxIterations) << "\n";
 			//std::cout << "Iterations: " << MandelbrotGenerator::GenerateSubgroupAutoprecision(&q, imageBuffer, 1000, 1000, left, right, top, bottom, currentMinIterations, currentMaxIterations) << "\n";
-			auto end = std::chrono::steady_clock::now();
+			auto end = std::chrono::steady_clock::now(); // Stop the clock
+			// Set the stat (iterations & time) strings
 			timeTaken_Text.setString("Generation time: " + std::to_string(std::chrono::duration_cast<std::chrono::microseconds>(end - start).count()) + "mcs");
 			iterations_Text.setString("Iterations: " + std::to_string(iterationsTaken));
 			//std::cout << "Generated MANDELBROT\n";
+			
+			// We have just rendered so no need to re render
 			reRenderRequired = false;
 
 			// Delete the queue
@@ -243,6 +252,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			// Increase the enum by total possibilities - 1 moving it back 1
 			currentSetting = (Setting)((((int)currentSetting) + 2) % 3);
 		}
+		// Change the text colour based on the current selected setting
 		switch (currentSetting) {
 		case Setting::GENERATION_ALGORITHM:
 
@@ -284,7 +294,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 				// Increase the enum by 1
 				currentGenerationAlgorithm = (GenerationAlgorithm)((((int)currentGenerationAlgorithm) + 1) % 3);
-
+				// Change the text & min iterations based on our chosen algorithm
 				switch (currentGenerationAlgorithm) {
 				case GenerationAlgorithm::STANDARD:
 					generationalgoValue_Text.setString("Standard");
@@ -296,7 +306,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					break;
 				case GenerationAlgorithm::STANDARD_BUFFERS:
 					generationalgoValue_Text.setString("Standard with Buffers");
-					currentMinIterations = currentMaxIterations;
+					currentMinIterations = 0;
 					break;
 				}
 
@@ -304,7 +314,10 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case Setting::RESOLUTION:
 				// Increase the enum by 1
 				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 1) % 4);
+				
+				// Delete the current image buffer (As we are resizing it)
 				delete imageBuffer;
+				// Switch over each resolution setting, changing the text and image variables for the chosen one.
 				switch (currentResolutionSetting) {
 				case Resolution::r1000x1000:
 					resolutionValue_Text.setString("1000 x 1000");
@@ -337,6 +350,8 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case Setting::DEVICE:
 				// Increase the enum by 1
 				currentDevice = (Device)((((int)currentDevice) + 1) % 2);
+				// Switch over the chosen device, trying to access it with a selector
+				// Display the currently selected device name and if it was successful to get the correct device type
 				switch (currentDevice) {
 				case Device::CPU:
 					deviceValue_Text.setString("CPU");
@@ -379,7 +394,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 				// Increase the enum by total possibilities - 1 moving it back 1
 				currentGenerationAlgorithm = (GenerationAlgorithm)((((int)currentGenerationAlgorithm) + 2) % 3);
-
+				// Change the text & min iterations based on our chosen algorithm
 				switch (currentGenerationAlgorithm) {
 				case GenerationAlgorithm::STANDARD:
 					generationalgoValue_Text.setString("Standard");
@@ -391,7 +406,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 					break;
 				case GenerationAlgorithm::STANDARD_BUFFERS:
 					generationalgoValue_Text.setString("Standard with Buffers");
-					currentMinIterations = currentMaxIterations;
+					currentMinIterations = 0;
 					break;
 				}
 
@@ -399,7 +414,9 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case Setting::RESOLUTION:
 				// Decrease the enum by 1 (By increasing by total - 1)
 				currentResolutionSetting = (Resolution)((((int)currentResolutionSetting) + 3) % 4);
+				// Delete the current image buffer (As we are resizing it)
 				delete imageBuffer;
+				// Switch over each resolution setting, changing the text and image variables for the chosen one.
 				switch (currentResolutionSetting) {
 				case Resolution::r1000x1000:
 					resolutionValue_Text.setString("1000 x 1000");
@@ -432,6 +449,8 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 			case Setting::DEVICE:
 				// Decrease the enum by 1 (By increasing by total - 1)
 				currentDevice = (Device)((((int)currentDevice) + 1) % 2);
+				// Switch over the chosen device, trying to access it with a selector
+				// Display the currently selected device name and if it was successful to get the correct device type
 				switch (currentDevice) {
 				case Device::CPU:
 					deviceValue_Text.setString("CPU");
@@ -470,6 +489,7 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 	// ===============
 	// MISC GUI UPDATE
 	// ===============
+	// Resize the stats overlay based on the text inside it
 	statsOverlay.setSize(sf::Vector2f(std::max(std::max(
 		std::max(zoomLevel_Text.getGlobalBounds().width,
 			maxIterations_Text.getGlobalBounds().width),
@@ -481,24 +501,17 @@ void MandelbrotScene::onUpdate(sf::RenderWindow& window, float deltaTime)
 
 void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 {
+	// Create a new SFML texture
 	sf::Texture texture;
 	texture.create(width, height);
 
-	sf::Sprite sprite(texture); // needed to draw the texture on screen
+	// Create a sprite with that texture
+	sf::Sprite sprite(texture);
 
-	// ...
-
-	//for (register int i = 0; i < 1000 * 200 * 4; i += 4) {
-	//	pixels[i] = r; // obviously, assign the values you need here to form your color
-	//	pixels[i + 1] = g;
-	//	pixels[i + 2] = b;
-	//	pixels[i + 3] = a;
-	//}
-
+	// Set that textures pixels to the data in our image buffer
 	texture.update((sf::Uint8*)imageBuffer);
 
-	// ...
-
+	// Draw all other elements, like stats
 	window.draw(sprite);
 	window.draw(statsOverlay);
 	window.draw(zoomLevel_Text);
@@ -506,7 +519,9 @@ void MandelbrotScene::onRender(sf::RenderWindow& window, float deltaTime)
 	if(currentGenerationAlgorithm == GenerationAlgorithm::SUBGROUP_AUTOLIMIT) window.draw(minIterations_Text);
 	window.draw(timeTaken_Text);
 	window.draw(iterations_Text);
+	// Display the zoom warning if we are close the the precision limit
 	if((right-left) < 0.000000000001) window.draw(zoomWarning_Text);
+	// Display the settings menu if it is open
 	if (settingsOpen) {
 		window.draw(settingsOverlay);
 		window.draw(generationAlgoTitle_Text);

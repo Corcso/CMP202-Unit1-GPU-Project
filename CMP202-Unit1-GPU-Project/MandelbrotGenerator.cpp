@@ -1,6 +1,6 @@
 #include "MandelbrotGenerator.h"
 
-
+// Custom complex number struct taken from lab excersises. 
 MandelbrotGenerator::ComplexD MandelbrotGenerator::c_add(ComplexD c1, ComplexD c2)
 {
 	ComplexD tmp;

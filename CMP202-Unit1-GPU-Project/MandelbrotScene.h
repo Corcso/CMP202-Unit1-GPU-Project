@@ -22,8 +22,10 @@ private:
 	// This stores true if one of the render parameters has changed and a re render is required. 
 	bool reRenderRequired;
 
+	// The current view of our window
 	double left = -2, right = 0, top = 1, bottom = -1;
-
+	
+	// Max and min iterations used by the algorithms
 	int currentMaxIterations = 1000;
 	int currentMinIterations = 0;
 
